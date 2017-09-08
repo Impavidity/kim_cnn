@@ -12,6 +12,7 @@ from model import KimCNN
 
 # Set default configuration in : args.py
 args = get_args()
+
 # Set random seed for reproducibility
 torch.manual_seed(args.seed)
 if not args.cuda:
@@ -62,6 +63,9 @@ if args.resume_snapshot:
 else:
     model = KimCNN(config)
     model.embed.weight.data = TEXT.vocab.vectors
+    if args.cuda:
+        model.cuda()
+        print("Shift model to GPU")
 
 
 while True:
