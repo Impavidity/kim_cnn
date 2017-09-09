@@ -40,8 +40,8 @@ if args.dataset == 'SST-1':
 
 
 
-TEXT.build_vocab(train, dev, test, vectors='glove.6B.300d')
-LABEL.build_vocab(train, dev, test)
+TEXT.build_vocab(train, vectors='glove.6B.300d')
+LABEL.build_vocab(train)
 
 #print('len(TEXT.vocab)', len(TEXT.vocab))
 #print('TEXT.vocab.vectors.size()', TEXT.vocab.vectors.size())
