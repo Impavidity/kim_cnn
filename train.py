@@ -33,15 +33,15 @@ random.seed(args.seed)
 # Set up the data for training
 # SST-1
 if args.dataset == 'SST-1':
-    TEXT = data.Field(batch_first=True, lower=True, tokenize=clean_str_sst)
+    TEXT = data.Field(batch_first=True, tokenize=clean_str_sst)
     LABEL = data.Field(sequential=False)
     train, dev, test = SST1Dataset.splits(TEXT, LABEL)
 
 
 
 
-TEXT.build_vocab(train, vectors='glove.6B.300d')
-LABEL.build_vocab(train)
+TEXT.build_vocab(train, dev, test, vectors='glove.6B.300d')
+LABEL.build_vocab(train, dev, test)
 
 #print('len(TEXT.vocab)', len(TEXT.vocab))
 #print('TEXT.vocab.vectors.size()', TEXT.vocab.vectors.size())
@@ -65,11 +65,19 @@ config.embed_num = len(TEXT.vocab)
 
 
 #print(config)
+print("VOCAB num",len(TEXT.vocab))
+print("LABEL.target_class:", len(LABEL.vocab))
+print("LABELS:",LABEL.vocab.itos)
+print("Train instance", len(train))
+print("Dev instance", len(dev))
+print("Test instance", len(test))
 
-print("len(LABEL.target_class)", len(LABEL.vocab))
 
 if args.resume_snapshot:
-    model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
+    if args.cuda:
+        model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage.cuda(args.gpu))
+    else:
+        model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
 else:
     model = KimCNN(config)
     model.embed.weight.data = TEXT.vocab.vectors
