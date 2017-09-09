@@ -10,7 +10,7 @@ def get_args():
     parser.add_argument('--batch_size', type=int, default=2000)
     parser.add_argument('--mode', type=str, default='multichannel')
     parser.add_argument('--lr', type=float, default=1e-3)
-    parser.add_argument('--seed', type=int, default=2324)
+    parser.add_argument('--seed', type=int, default=3435)
     parser.add_argument('--dataset', type=str, default='SST-1')
     parser.add_argument('--resume_snapshot', type=str, default=None)
     parser.add_argument('--dev_every', type=int, default=50)
@@ -21,7 +21,7 @@ def get_args():
     parser.add_argument('--words_dim', type=int, default=300)
     parser.add_argument('--embed_dim', type=int, default=300)
     parser.add_argument('--dropout', type=float, default=0.5)
-    parser.add_argument('--epoch_dacay', type=int, default=15)
+    parser.add_argument('--epoch_decay', type=int, default=15)
     parser.add_argument('--vector_cache', type=str, default="data/word2vec.sst-1.pt")
     parser.add_argument('--trained_model', type=str, default="")
 
