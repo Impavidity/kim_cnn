@@ -32,7 +32,7 @@ if args.dataset == 'SST-1':
     LABEL = data.Field(sequential=False)
     train, dev, test = SST1Dataset.splits(TEXT, LABEL)
 
-TEXT.build_vocab(train, vectors='glove.6B.300d')
+TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
 
 train_iter = data.Iterator(train, batch_size=args.batch_size, device=args.gpu, train=True, repeat=False,

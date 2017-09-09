@@ -40,8 +40,21 @@ if args.dataset == 'SST-1':
 
 
 
-TEXT.build_vocab(train, vectors='glove.6B.300d')
+TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
+
+if os.path.isfile(args.vector_cache):
+    stoi, vectors, dim = torch.load(args.vector_cache)
+    TEXT.vocab.vectors = torch.Tensor(len(TEXT.vocab), dim)
+    for i, token in enumerate(TEXT.vocab.itos):
+        wv_index = stoi.get(token, None)
+        if wv_index is not None:
+            TEXT.vocab.vectors[i] = vectors[wv_index]
+        else:
+            TEXT.vocab.vectors[i] = torch.Tensor.zero_(TEXT.vocab.vectors[i])
+else:
+    print("Error: Need word embedding pt file")
+    exit(1)
 
 #print('len(TEXT.vocab)', len(TEXT.vocab))
 #print('TEXT.vocab.vectors.size()', TEXT.vocab.vectors.size())
@@ -165,6 +178,11 @@ while True:
                                       epoch, iterations, 1 + batch_idx, len(train_iter),
                                       100. * (1 + batch_idx) / len(train_iter), loss.data[0], ' ' * 8,
                                       n_correct / n_total * 100, ' ' * 12))
+
+    if (epoch % args.epoch_decay == 0):
+        lr = args.learning_rate * (0.75 ** (epoch // args.epoch_decay))
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
 
 
 
