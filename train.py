@@ -100,6 +100,7 @@ header = '  Time Epoch Iteration Progress    (%Epoch)   Loss   Dev/Loss     Accu
 dev_log_template = ' '.join('{:>6.0f},{:>5.0f},{:>9.0f},{:>5.0f}/{:<5.0f} {:>7.0f}%,{:>8.6f},{:8.6f},{:12.4f},{:12.4f}'.split(','))
 log_template = ' '.join('{:>6.0f},{:>5.0f},{:>9.0f},{:>5.0f}/{:<5.0f} {:>7.0f}%,{:>8.6f},{},{:12.4f},{}'.split(','))
 os.makedirs(args.save_path, exist_ok=True)
+os.makedirs(os.path.join(args.save_path, args.dataset), exist_ok=True)
 print(header)
 
 
@@ -149,7 +150,7 @@ while True:
             if dev_acc > best_dev_acc:
                 iters_not_improved = 0
                 best_dev_acc = dev_acc
-                snapshot_path = os.path.join(args.save_path, 'best_model.pt')
+                snapshot_path = os.path.join(args.save_path, args.mode+'_best_model.pt')
                 torch.save(model, snapshot_path)
             else:
                 iters_not_improved += 1
