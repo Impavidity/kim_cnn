@@ -11,7 +11,7 @@ def get_args():
     parser.add_argument('--mode', type=str, default='rand')
     parser.add_argument('--lr', type=float, default=2e-3)
     parser.add_argument('--seed', type=int, default=2324)
-    parser.add_argument('--dataset', type=str, default='TREC')
+    parser.add_argument('--dataset', type=str, default='SST-1')
     parser.add_argument('--resume_snapshot', type=str, default=None)
     parser.add_argument('--dev_every', type=int, default=100)
     parser.add_argument('--log_every', type=int, default=20)

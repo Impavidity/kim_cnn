@@ -10,10 +10,13 @@ from torchtext import datasets
 from args import get_args
 from model import KimCNN
 
+import random
+
 # Set default configuration in : args.py
 args = get_args()
 
 # Set random seed for reproducibility
+
 torch.manual_seed(args.seed)
 if not args.cuda:
     args.gpu = -1
@@ -23,6 +26,8 @@ if torch.cuda.is_available() and args.cuda:
     torch.cuda.manual_seed(args.seed)
 if torch.cuda.is_available() and not args.cuda:
     print("Warning: You have Cuda but not use it. You are using CPU for training.")
+np.random.seed(args.seed)
+random.seed(args.seed)
 
 # Set up the data for training
 # SST-1
