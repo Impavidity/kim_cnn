@@ -180,7 +180,7 @@ while True:
                                       n_correct / n_total * 100, ' ' * 12))
 
     if (epoch % args.epoch_decay == 0):
-        lr = args.learning_rate * (0.75 ** (epoch // args.epoch_decay))
+        lr = args.lr * (0.75 ** (epoch // args.epoch_decay))
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
 
