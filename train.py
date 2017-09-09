@@ -80,7 +80,8 @@ if args.resume_snapshot:
         model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
 else:
     model = KimCNN(config)
-    model.embed.weight.data = TEXT.vocab.vectors
+    model.static_embed.weight.data = TEXT.vocab.vectors
+    model.non_static_embed.weight.data = TEXT.vocab.vectors
     if args.cuda:
         model.cuda()
         print("Shift model to GPU")
