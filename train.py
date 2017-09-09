@@ -1,5 +1,4 @@
-import torch 
-import torch.optim as optim
+import torch
 import torch.nn as nn
 import time
 import os
@@ -12,6 +11,7 @@ from model import KimCNN
 import random
 
 from SST1 import SST1Dataset
+from utils import clean_str_sst
 
 # Set default configuration in : args.py
 args = get_args()
@@ -33,7 +33,7 @@ random.seed(args.seed)
 # Set up the data for training
 # SST-1
 if args.dataset == 'SST-1':
-    TEXT = data.Field(batch_first=True, lower=True)
+    TEXT = data.Field(batch_first=True, lower=True, tokenize=clean_str_sst)
     LABEL = data.Field(sequential=False)
     train, dev, test = SST1Dataset.splits(TEXT, LABEL)
 

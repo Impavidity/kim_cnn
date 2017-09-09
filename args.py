@@ -21,6 +21,7 @@ def get_args():
     parser.add_argument('--words_dim', type=int, default=300)
     parser.add_argument('--embed_dim', type=int, default=300)
     parser.add_argument('--dropout', type=float, default=0.5)
+    parser.add_argument('--trained_model', type=str, default="")
 
 
     args = parser.parse_args()
