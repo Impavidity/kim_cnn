@@ -126,7 +126,7 @@ for epoch in range(args.epochs):
 
 
         # Evaluate performance on validation set
-        if iterations % args.dev_every == 0:
+        if iterations % args.dev_every == 1:
             # switch model into evalutaion mode
             model.eval(); dev_iter.init_epoch()
             n_dev_correct = 0
@@ -154,7 +154,7 @@ for epoch in range(args.epochs):
                     early_stop = True
                     break
 
-        if iterations % args.log_every == 0:
+        if iterations % args.log_every == 1:
             # print progress message
             print(log_template.format(time.time() - start,
                                       epoch, iterations, 1 + batch_idx, len(train_iter),
