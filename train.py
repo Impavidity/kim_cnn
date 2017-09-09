@@ -93,6 +93,7 @@ early_stop = False
 best_dev_acc = 0
 iterations = 0
 iters_not_improved = 0
+epoch = 0
 start = time.time()
 header = '  Time Epoch Iteration Progress    (%Epoch)   Loss   Dev/Loss     Accuracy  Dev/Accuracy'
 dev_log_template = ' '.join('{:>6.0f},{:>5.0f},{:>9.0f},{:>5.0f}/{:<5.0f} {:>7.0f}%,{:>8.6f},{:8.6f},{:12.4f},{:12.4f}'.split(','))
@@ -100,11 +101,12 @@ log_template = ' '.join('{:>6.0f},{:>5.0f},{:>9.0f},{:>5.0f}/{:<5.0f} {:>7.0f}%,
 os.makedirs(args.save_path, exist_ok=True)
 print(header)
 
-for epoch in range(args.epochs):
+
+while True:
     if early_stop:
         print("Early Stopping. Epoch: {}, Best Dev Acc: {}".format(epoch, best_dev_acc))
         break
-
+    epoch += 1
     train_iter.init_epoch()
     n_correct, n_total = 0, 0
 
