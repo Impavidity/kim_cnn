@@ -44,7 +44,7 @@ class KimCNN(nn.Module):
             x = non_static_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'multichannel':
             non_static_input = self.non_static_embed(x)
-            static_input = self.static_embed(x.text)
+            static_input = self.static_embed(x)
             x = torch.stack([non_static_input, static_input], dim=1) # (batch, channel_input=2, sent_len, embed_dim)
         else:
             print("Unsupported Mode")
