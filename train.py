@@ -65,6 +65,7 @@ config.embed_num = len(TEXT.vocab)
 
 
 #print(config)
+print("Dataset {}    Mode {}".format(args.dataset, args.mode))
 print("VOCAB num",len(TEXT.vocab))
 print("LABEL.target_class:", len(LABEL.vocab))
 print("LABELS:",LABEL.vocab.itos)
@@ -150,7 +151,7 @@ while True:
             if dev_acc > best_dev_acc:
                 iters_not_improved = 0
                 best_dev_acc = dev_acc
-                snapshot_path = os.path.join(args.save_path, args.mode+'_best_model.pt')
+                snapshot_path = os.path.join(args.save_path, args.dataset, args.mode+'_best_model.pt')
                 torch.save(model, snapshot_path)
             else:
                 iters_not_improved += 1
