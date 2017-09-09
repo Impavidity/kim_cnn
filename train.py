@@ -94,15 +94,17 @@ if args.resume_snapshot:
         model = torch.load(args.resume_snapshot, map_location=lambda storage, location: storage)
 else:
     model = KimCNN(config)
-    model.static_embed.weight.data = TEXT.vocab.vectors
-    model.non_static_embed.weight.data = TEXT.vocab.vectors
+    model.static_embed.weight.data.copy_(TEXT.vocab.vectors)
+    model.non_static_embed.weight.data.copy_(TEXT.vocab.vectors)
     if args.cuda:
         model.cuda()
         print("Shift model to GPU")
 
 
 parameter = filter(lambda p: p.requires_grad, model.parameters())
-optimizer = torch.optim.Adam(parameter, lr=args.lr)
+#for idx, p in enumerate(parameter):
+#    print(idx, p)
+optimizer = torch.optim.Adadelta(parameter, lr=args.lr, weight_decay=args.weight_decay)
 criterion = nn.CrossEntropyLoss()
 early_stop = False
 best_dev_acc = 0
@@ -179,10 +181,10 @@ while True:
                                       100. * (1 + batch_idx) / len(train_iter), loss.data[0], ' ' * 8,
                                       n_correct / n_total * 100, ' ' * 12))
 
-    if (epoch % args.epoch_decay == 0):
-        lr = args.lr * (0.75 ** (epoch // args.epoch_decay))
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
+    #if (epoch % args.epoch_decay == 0):
+    #    lr = args.lr * (0.75 ** (epoch // args.epoch_decay))
+    #    for param_group in optimizer.param_groups:
+    #        param_group['lr'] = lr
 
 
 
