@@ -14,10 +14,10 @@ Implementation for Convolutional Neural Networks for Sentence Classification of 
 ## Quick Start
 
 
-To run the model on [SST-1] dataset on [rand](Model Type), just run the following code.
+To run the model on [SST-1] dataset on [multichannel](Model Type), just run the following code.
 
 ```
-python train.py
+python train.py --mode multichannel
 ```
 
 The file will be saved in 
@@ -29,7 +29,7 @@ saves/best_model.pt
 To test the model, you can use the following command.
 
 ```
-python main.py --trained_model saves/best_model.pt
+python main.py --trained_model saves/best_model.pt --mode multichannel
 ```
 
 
@@ -46,13 +46,13 @@ We experiment the model on the following three datasets.
 ### best dev 
 |dataset|rand|static|non-static|multichannel|
 |---|---|---|---|---|
-|SST-1|44.868302|44.414169|44.777475|47.229791|
+|SST-1|43.142598|48.773842|49.137148|49.318801|
 
 
 ### test
 |dataset|rand|static|non-static|multichannel|
 |---|---|---|---|---|
-|SST-1|43.619910|40.407240  |41.447964|43.891403|
+|SST-1|39.909502|46.380090|45.294118|48.416290|
 
 We do not tune the parameters for each dataset. And the implementation is simplified from the original version on regularization.
 
