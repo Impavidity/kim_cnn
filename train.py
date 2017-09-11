@@ -48,6 +48,7 @@ random.seed(args.seed)
 
 # Set up the data for training
 # SST-1
+
 if args.dataset == 'SST-1':
     TEXT = data.Field(batch_first=True, tokenize=clean_str_sst)
     LABEL = data.Field(sequential=False)

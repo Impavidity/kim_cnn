@@ -5,7 +5,7 @@ class SST1Dataset(data.TabularDataset):
     dirname = 'data'
     @classmethod
     def splits(cls, text_field, label_field, head_text_field, head_pos_field, head_dep_field, word_pos_field,
-               word_dep_field, train='phrases.train.tsv', validation='dev.tsv', test='test.tsv'):
+               word_dep_field, train='phrases.train.concat', validation='dev.concat', test='test.concat'):
         prefix_name = 'stsa.fine.'
         path = './data'
         return super(SST1Dataset, cls).splits(
