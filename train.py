@@ -65,6 +65,10 @@ TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
 WORD_POS_TAG.build_vocab(train)
 WORD_DEP_TAG.build_vocab(train)
+HEAD_TEXT.build_vocab(train, min_freq=2)
+HEAD_POS_TAG.build_vocab(train)
+HEAD_DEP_TAG.build_vocab(train)
+
 
 TEXT = set_vectors(TEXT, args.vector_cache)
 WORD_POS_TAG = set_vectors(WORD_POS_TAG, args.pos_cache)
@@ -80,8 +84,8 @@ config = args
 config.target_class = len(LABEL.vocab)
 config.words_num = len(TEXT.vocab)
 config.embed_num = len(TEXT.vocab)
-config.vocab_pos_size = len(WORD_POS_TAG.vocab)
-config.vocab_dep_size = len(WORD_DEP_TAG.vocab)
+config.pos_vocab = len(WORD_POS_TAG.vocab)
+config.dep_vocab = len(WORD_DEP_TAG.vocab)
 
 #print(config)
 print("Dataset {}    Mode {}".format(args.dataset, args.mode))
@@ -102,7 +106,6 @@ else:
     model = KimCNN(config)
     model.static_embed.weight.data.copy_(TEXT.vocab.vectors)
     model.non_static_embed.weight.data.copy_(TEXT.vocab.vectors)
-    print(WORD_POS_TAG.vocab.vectors.size())
     model.static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
     model.non_static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
     model.static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
@@ -144,7 +147,6 @@ while True:
         # Batch size : (Sentence Length, Batch_size)
         iterations += 1
         model.train(); optimizer.zero_grad()
-        #print("Text Size:", batch.text.size())
         #print("Label Size:", batch.label.size())
         scores = model(batch)
         n_correct += (torch.max(scores, 1)[1].view(batch.label.size()).data == batch.label.data).sum()

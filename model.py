@@ -17,8 +17,8 @@ class KimCNN(nn.Module):
 
         vocab_pos_size = config.pos_vocab
         vocab_dep_size = config.dep_vocab
-        pos_size = 46
-        dep_size = 43
+        pos_size = 44
+        dep_size = 41
 
         if self.mode == 'linguistic_multichannel':
             input_channel = 4
@@ -49,7 +49,7 @@ class KimCNN(nn.Module):
 
 
     def forward(self, x):
-        x = x.text
+        x_text = x.text
         x_pos = x.word_pos
         x_dep = x.word_dep
         head_x = x.head_text
@@ -57,20 +57,20 @@ class KimCNN(nn.Module):
         head_dep = x.head_dep
 
         if self.mode == 'rand':
-            word_input = self.embed(x) # (batch, sent_len, embed_dim)
+            word_input = self.embed(x_text) # (batch, sent_len, embed_dim)
             x = word_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'static':
-            static_input = self.static_embed(x)
+            static_input = self.static_embed(x_text)
             x = static_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'non-static':
-            non_static_input = self.static_embed(x)
+            non_static_input = self.static_embed(x_text)
             x = non_static_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'multichannel':
-            non_static_input = self.non_static_embed(x)
-            static_input = self.static_embed(x)
+            non_static_input = self.non_static_embed(x_text)
+            static_input = self.static_embed(x_text)
             x = torch.stack([non_static_input, static_input], dim=1) # (batch, channel_input=2, sent_len, embed_dim)
         elif self.mode == 'linguistic_static':
-            word_static_input = self.static_embed(x)
+            word_static_input = self.static_embed(x_text)
             word_static_pos_input = self.static_pos_embed(x_pos)
             word_static_dep_input = self.static_dep_embed(x_dep)
             word_channel = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input], 2)
@@ -80,7 +80,7 @@ class KimCNN(nn.Module):
             head_channel = torch.cat([head_static_input, head_static_pos_input, head_static_dep_input], 2)
             x = torch.stack([head_channel, word_channel], dim=1)
         elif self.mode == 'linguistic_nonstatic':
-            word_non_static_input = self.non_static_embed(x)
+            word_non_static_input = self.non_static_embed(x_text)
             word_non_static_pos_input = self.non_static_pos_embed(x_pos)
             word_non_static_dep_input = self.non_static_dep_embed(x_dep)
             word_channel = torch.cat([word_non_static_input, word_non_static_pos_input, word_non_static_dep_input], 2)
@@ -90,7 +90,7 @@ class KimCNN(nn.Module):
             head_channel = torch.cat([head_non_static_input, head_non_static_pos_input, head_non_static_dep_input], 2)
             x = torch.stack([head_channel, word_channel], dim=1)
         elif self.mode == 'linguistic_multichannel':
-            word_static_input = self.static_embed(x)
+            word_static_input = self.static_embed(x_text)
             word_static_pos_input = self.static_pos_embed(x_pos)
             word_static_dep_input = self.static_dep_embed(x_dep)
             word_channel_static = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input], 2)
@@ -100,7 +100,7 @@ class KimCNN(nn.Module):
             head_static_dep_input = self.static_dep_embed(head_dep)
             head_channel_static = torch.cat([head_static_input, head_static_pos_input, head_static_dep_input], 2)
 
-            word_non_static_input = self.non_static_embed(x)
+            word_non_static_input = self.non_static_embed(x_text)
             word_non_static_pos_input = self.non_static_pos_embed(x_pos)
             word_non_static_dep_input = self.non_static_dep_embed(x_dep)
             word_channel_dynamic = torch.cat([word_non_static_input, word_non_static_pos_input,
