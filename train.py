@@ -12,6 +12,22 @@ import random
 
 from SST1 import SST1Dataset
 from utils import clean_str_sst
+from utils import create_lookup
+
+def set_vectors(field, vector_path):
+    if os.path.isfile(vector_path):
+        stoi, vectors, dim = torch.load(vector_path)
+        field.vocab.vectors = torch.Tensor(len(field.vocab), dim)
+        for i, token in enumerate(field.vocab.itos):
+            wv_index = stoi.get(token, None)
+            if wv_index is not None:
+                field.vocab.vectors[i] = vectors[wv_index]
+            else:
+                field.vocab.vectors[i] = torch.Tensor.zero_(field.vocab.vectors[i])
+    else:
+        print("Error: Need word embedding pt file")
+        exit(1)
+    return field
 
 # Set default configuration in : args.py
 args = get_args()
@@ -35,29 +51,21 @@ random.seed(args.seed)
 if args.dataset == 'SST-1':
     TEXT = data.Field(batch_first=True, tokenize=clean_str_sst)
     LABEL = data.Field(sequential=False)
-    train, dev, test = SST1Dataset.splits(TEXT, LABEL)
-
-
-
+    HEAD_TEXT = data.Field()
+    HEAD_POS_TAG = data.Field()
+    HEAD_DEP_TAG = data.Field()
+    WORD_POS_TAG = data.Field()
+    WORD_DEP_TAG = data.Field()
+    train, dev, test = SST1Dataset.splits(TEXT, LABEL, HEAD_TEXT, HEAD_POS_TAG, HEAD_DEP_TAG, WORD_POS_TAG, WORD_DEP_TAG)
 
 TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
+WORD_POS_TAG.build_vocab(train)
+WORD_DEP_TAG.build_vocab(train)
 
-if os.path.isfile(args.vector_cache):
-    stoi, vectors, dim = torch.load(args.vector_cache)
-    TEXT.vocab.vectors = torch.Tensor(len(TEXT.vocab), dim)
-    for i, token in enumerate(TEXT.vocab.itos):
-        wv_index = stoi.get(token, None)
-        if wv_index is not None:
-            TEXT.vocab.vectors[i] = vectors[wv_index]
-        else:
-            TEXT.vocab.vectors[i] = torch.Tensor.zero_(TEXT.vocab.vectors[i])
-else:
-    print("Error: Need word embedding pt file")
-    exit(1)
-
-#print('len(TEXT.vocab)', len(TEXT.vocab))
-#print('TEXT.vocab.vectors.size()', TEXT.vocab.vectors.size())
+TEXT = set_vectors(TEXT, args.vector_cache)
+WORD_POS_TAG = set_vectors(WORD_POS_TAG, args.pos_cache)
+WORD_DEP_TAG = set_vectors(WORD_DEP_TAG, args.dep_cache)
 
 train_iter = data.Iterator(train, batch_size=args.batch_size, device=args.gpu, train=True, repeat=False,
                                    sort=False, shuffle=True)
@@ -65,12 +73,6 @@ dev_iter = data.Iterator(dev, batch_size=args.batch_size, device=args.gpu, train
                                    sort=False, shuffle=False)
 test_iter = data.Iterator(test, batch_size=args.batch_size, device=args.gpu, train=False, repeat=False,
                                    sort=False, shuffle=False)
-
-#batch = next(iter(train_iter))
-#print(batch.text)
-#print(batch.label)
-
-
 config = args
 config.target_class = len(LABEL.vocab)
 config.words_num = len(TEXT.vocab)
@@ -96,6 +98,11 @@ else:
     model = KimCNN(config)
     model.static_embed.weight.data.copy_(TEXT.vocab.vectors)
     model.non_static_embed.weight.data.copy_(TEXT.vocab.vectors)
+    model.static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
+    model.non_static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
+    model.static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
+    model.non_static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
+
     if args.cuda:
         model.cuda()
         print("Shift model to GPU")
@@ -180,28 +187,3 @@ while True:
                                       epoch, iterations, 1 + batch_idx, len(train_iter),
                                       100. * (1 + batch_idx) / len(train_iter), loss.data[0], ' ' * 8,
                                       n_correct / n_total * 100, ' ' * 12))
-
-    #if (epoch % args.epoch_decay == 0):
-    #    lr = args.lr * (0.75 ** (epoch // args.epoch_decay))
-    #    for param_group in optimizer.param_groups:
-    #        param_group['lr'] = lr
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -70,7 +70,7 @@ def predict(dataset_iter, dataset, dataset_name):
     print("{} accuracy: {:8.6f}%".format(dataset_name, accuracy))
 
 # Run the model on the dev set
-predict(dataset_iter=dev_iter, dataset=dev, dataset_name="valid")
+# predict(dataset_iter=dev_iter, dataset=dev, dataset_name="valid")
 
 # Run the model on the test set
 predict(dataset_iter=test_iter, dataset=test, dataset_name="test")

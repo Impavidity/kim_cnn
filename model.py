@@ -14,18 +14,33 @@ class KimCNN(nn.Module):
         embed_dim = config.embed_dim
         self.mode = config.mode
         Ks = 3 # There are three conv net here
-        if config.mode == 'multichannel':
+
+        pos_size = 44
+        dep_size = 41
+
+        if self.mode == 'linguistic_multichannel':
+            input_channel = 4
+        elif self.mode == 'multichannel' or self.mode == 'linguistic_static' or self.mode == 'linguistic_nonstatic':
             input_channel = 2
         else:
             input_channel = 1
+
         self.embed = nn.Embedding(words_num, words_dim)
         self.static_embed = nn.Embedding(embed_num, embed_dim)
         self.non_static_embed = nn.Embedding(embed_num, embed_dim)
         self.static_embed.weight.requires_grad = False
 
+        self.static_pos_embed = nn.Embedding(pos_size, pos_size)
+        self.static_dep_embed = nn.Embedding(dep_size, dep_size)
+        self.static_pos_embed.weight.requires_grad = False
+        self.static_dep_embed.weight.requires_grad = False
+
+        self.non_static_pos_embed = nn.Embedding(pos_size, pos_size)
+        self.non_static_dep_embed = nn.Embedding(dep_size, dep_size)
+
         self.conv1 = nn.Conv2d(input_channel, output_channel, (3, words_dim), padding=(2,0))
         self.conv2 = nn.Conv2d(input_channel, output_channel, (4, words_dim), padding=(3,0))
-        self.conv3 = nn.Conv2d(input_channel, output_channel, (5, words_dim), padding=(4,0))
+        self.conv3 = nn.Conv2d(input_channel, output_channel, (7, words_dim), padding=(6,0))
 
         self.dropout = nn.Dropout(config.dropout)
         self.fc1 = nn.Linear(Ks * output_channel, target_class)
@@ -33,6 +48,12 @@ class KimCNN(nn.Module):
 
     def forward(self, x):
         x = x.text
+        x_pos = x.word_pos
+        x_dep = x.word_dep
+        head_x = x.head_text
+        head_pos = x.head_pos
+        head_dep = x.head_dep
+
         if self.mode == 'rand':
             word_input = self.embed(x) # (batch, sent_len, embed_dim)
             x = word_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
@@ -46,6 +67,48 @@ class KimCNN(nn.Module):
             non_static_input = self.non_static_embed(x)
             static_input = self.static_embed(x)
             x = torch.stack([non_static_input, static_input], dim=1) # (batch, channel_input=2, sent_len, embed_dim)
+        elif self.mode == 'linguistic_static':
+            word_static_input = self.static_embed(x)
+            word_static_pos_input = self.static_pos_embed(x_pos)
+            word_static_dep_input = self.static_dep_embed(x_dep)
+            word_channel = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input], 2)
+            head_static_input = self.static_embed(head_x)
+            head_static_pos_input = self.static_pos_embed(head_pos)
+            head_static_dep_input = self.static_dep_embed(head_dep)
+            head_channel = torch.cat([head_static_input, head_static_pos_input, head_static_dep_input], 2)
+            x = torch.stack([head_channel, word_channel], dim=1)
+        elif self.mode == 'linguistic_nonstatic':
+            word_non_static_input = self.non_static_embed(x)
+            word_non_static_pos_input = self.non_static_pos_embed(x_pos)
+            word_non_static_dep_input = self.non_static_dep_embed(x_dep)
+            word_channel = torch.cat([word_non_static_input, word_non_static_pos_input, word_non_static_dep_input], 2)
+            head_non_static_input = self.non_static_embed(head_x)
+            head_non_static_pos_input = self.non_static_pos_embed(head_pos)
+            head_non_static_dep_input = self.non_static_dep_embed(head_dep)
+            head_channel = torch.cat([head_non_static_input, head_non_static_pos_input, head_non_static_dep_input], 2)
+            x = torch.stack([head_channel, word_channel], dim=1)
+        elif self.mode == 'linguistic_multichannel':
+            word_static_input = self.static_embed(x)
+            word_static_pos_input = self.static_pos_embed(x_pos)
+            word_static_dep_input = self.static_dep_embed(x_dep)
+            word_channel_static = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input], 2)
+
+            head_static_input = self.static_embed(head_x)
+            head_static_pos_input = self.static_pos_embed(head_pos)
+            head_static_dep_input = self.static_dep_embed(head_dep)
+            head_channel_static = torch.cat([head_static_input, head_static_pos_input, head_static_dep_input], 2)
+
+            word_non_static_input = self.non_static_embed(x)
+            word_non_static_pos_input = self.non_static_pos_embed(x_pos)
+            word_non_static_dep_input = self.non_static_dep_embed(x_dep)
+            word_channel_dynamic = torch.cat([word_non_static_input, word_non_static_pos_input,
+                                                word_non_static_dep_input], 2)
+            head_non_static_input = self.non_static_embed(head_x)
+            head_non_static_pos_input = self.non_static_pos_embed(head_pos)
+            head_non_static_dep_input = self.non_static_dep_embed(head_dep)
+            head_channel_dynamic = torch.cat([head_non_static_input, head_non_static_pos_input,
+                                                head_non_static_dep_input], 2)
+            x = torch.stack([word_channel_dynamic, word_channel_static, head_channel_dynamic,head_channel_static], dim=1)
         else:
             print("Unsupported Mode")
             exit()
