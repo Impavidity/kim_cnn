@@ -41,7 +41,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     input = os.path.splitext(args.input)[0]
-    with open(input) as f, open(input + '.deps.json') as g, open(input + '.concat', 'w') as h:
+    with open(input + '.tsv') as f, open(input + '.deps.json') as g, open(input + '.concat', 'w') as h:
         for line1, line2 in zip(f, g):
             line1 = line1.strip()
             line2 = line2.strip()
