@@ -6,12 +6,12 @@ dep_tags = ['csubj', 'aux', 'acl:relcl', 'mark', 'expl', 'amod', 'acl', 'paratax
             'advmod', 'nmod:poss', 'cc:preconj', 'det', 'case', 'ROOT', 'punct', 'nmod:npmod',
             'nsubjpass', 'det:predet', 'advcl', 'root', 'dep', 'mwe', 'xcomp', 'nmod', 'cop',
             'cc', 'nsubj', 'csubjpass', 'appos', 'conj', 'nummod', 'discourse', 'auxpass', 'ccomp',
-            'nmod:tmod', 'iobj', 'compound:prt', 'dobj', 'neg', 'NO_DEP']
+            'nmod:tmod', 'iobj', 'compound:prt', 'dobj', 'neg', 'NO_DEP', '<unk>', '<pad>']
 
 pos_tags = ['RBS', "''", 'VB', '#', '.', 'WP$', 'SYM', 'LS', 'WDT', 'NNP', 'TO', 'CD', 'NNPS',
             'NN', 'MD', 'RBR', 'JJS', 'VBN', 'VBP', '``', 'WRB', 'JJR', 'VBD', 'FW', 'RB', 'NNS',
             'POS', ',', 'PDT', 'UH', 'VBG', '$', 'PRP$', 'VBZ', 'PRP', ':', 'WP', 'IN', 'CC', 'DT',
-            'JJ', 'RP', 'EX', 'NO_POS']
+            'JJ', 'RP', 'EX', 'NO_POS', '<unk>', '<pad>']
 
 def clean_str(string):
   """
@@ -45,7 +45,6 @@ def one_hot(tag, index):
     tag_one_hot = np.zeros(len(tag), dtype=float)
     tag_one_hot[index] = 1.0
     return tag_one_hot
-
 
 def create_lookup():
     pos_pt = './data/pos.sst-1.pt'

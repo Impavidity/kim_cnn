@@ -15,8 +15,8 @@ class KimCNN(nn.Module):
         self.mode = config.mode
         Ks = 3 # There are three conv net here
 
-        pos_size = 44
-        dep_size = 41
+        pos_size = 46
+        dep_size = 43
 
         if self.mode == 'linguistic_multichannel':
             input_channel = 4
