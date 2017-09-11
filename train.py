@@ -14,23 +14,17 @@ from SST1 import SST1Dataset
 from utils import clean_str_sst
 from utils import create_lookup
 
-def set_vectors(field, vector_path, use_dim=False):
+def set_vectors(field, vector_path):
     if os.path.isfile(vector_path):
         stoi, vectors, dim = torch.load(vector_path)
+        field.vocab.vectors = torch.Tensor(len(field.vocab), dim)
 
-        if use_dim:
-            field.vocab.vectors = torch.Tensor(dim, dim)
-        else:
-            field.vocab.vectors = torch.Tensor(len(field.vocab), dim)
-
-        if dim <= 50:
-            for i, token in enumerate(field.vocab.itos):
-                wv_index = stoi.get(token, None)
-                if wv_index is not None:
-                    field.vocab.vectors[i] = vectors[wv_index]
-                else:
-                    print(token)
-                    field.vocab.vectors[i] = torch.Tensor.zero_(field.vocab.vectors[i])
+        for i, token in enumerate(field.vocab.itos):
+            wv_index = stoi.get(token, None)
+            if wv_index is not None:
+                field.vocab.vectors[i] = vectors[wv_index]
+            else:
+                field.vocab.vectors[i] = torch.Tensor.zero_(field.vocab.vectors[i])
     else:
         print("Error: Need word embedding pt file")
         exit(1)
@@ -72,9 +66,9 @@ LABEL.build_vocab(train)
 WORD_POS_TAG.build_vocab(train)
 WORD_DEP_TAG.build_vocab(train)
 
-# TEXT = set_vectors(TEXT, args.vector_cache)
-# WORD_POS_TAG = set_vectors(WORD_POS_TAG, args.pos_cache, True)
-WORD_DEP_TAG = set_vectors(WORD_DEP_TAG, args.dep_cache, True)
+TEXT = set_vectors(TEXT, args.vector_cache)
+WORD_POS_TAG = set_vectors(WORD_POS_TAG, args.pos_cache)
+WORD_DEP_TAG = set_vectors(WORD_DEP_TAG, args.dep_cache)
 
 train_iter = data.Iterator(train, batch_size=args.batch_size, device=args.gpu, train=True, repeat=False,
                                    sort=False, shuffle=True)
@@ -86,7 +80,8 @@ config = args
 config.target_class = len(LABEL.vocab)
 config.words_num = len(TEXT.vocab)
 config.embed_num = len(TEXT.vocab)
-
+config.vocab_pos_size = len(WORD_POS_TAG.vocab)
+config.vocab_dep_size = len(WORD_DEP_TAG.vocab)
 
 #print(config)
 print("Dataset {}    Mode {}".format(args.dataset, args.mode))

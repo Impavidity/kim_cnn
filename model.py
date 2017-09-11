@@ -15,6 +15,8 @@ class KimCNN(nn.Module):
         self.mode = config.mode
         Ks = 3 # There are three conv net here
 
+        vocab_pos_size = config.pos_vocab
+        vocab_dep_size = config.dep_vocab
         pos_size = 46
         dep_size = 43
 
@@ -30,13 +32,13 @@ class KimCNN(nn.Module):
         self.non_static_embed = nn.Embedding(embed_num, embed_dim)
         self.static_embed.weight.requires_grad = False
 
-        self.static_pos_embed = nn.Embedding(pos_size, pos_size)
-        self.static_dep_embed = nn.Embedding(dep_size, dep_size)
+        self.static_pos_embed = nn.Embedding(vocab_pos_size, pos_size)
+        self.static_dep_embed = nn.Embedding(vocab_dep_size, dep_size)
         self.static_pos_embed.weight.requires_grad = False
         self.static_dep_embed.weight.requires_grad = False
 
-        self.non_static_pos_embed = nn.Embedding(pos_size, pos_size)
-        self.non_static_dep_embed = nn.Embedding(dep_size, dep_size)
+        self.non_static_pos_embed = nn.Embedding(vocab_pos_size, pos_size)
+        self.non_static_dep_embed = nn.Embedding(vocab_dep_size, dep_size)
 
         self.conv1 = nn.Conv2d(input_channel, output_channel, (3, words_dim), padding=(2,0))
         self.conv2 = nn.Conv2d(input_channel, output_channel, (4, words_dim), padding=(3,0))
