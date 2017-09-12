@@ -28,7 +28,7 @@ if not args.trained_model:
     sys.exit(1)
 
 if args.dataset == 'SST-1':
-    TEXT = data.Field(batch_first=True, lower=True, tokenize=clean_str_sst)
+    TEXT = data.Field(batch_first=True, lower=True)
     LABEL = data.Field(sequential=False)
     train, dev, test = SST1Dataset.splits(TEXT, LABEL)
 
