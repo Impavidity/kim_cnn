@@ -27,6 +27,9 @@ class KimCNN(nn.Module):
         else:
             input_channel = 1
 
+        if 'linguistic' in self.mode:
+            words_dim += pos_size + dep_size
+
         self.embed = nn.Embedding(words_num, words_dim)
         self.static_embed = nn.Embedding(embed_num, embed_dim)
         self.non_static_embed = nn.Embedding(embed_num, embed_dim)
