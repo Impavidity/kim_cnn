@@ -40,7 +40,7 @@ class KimCNN(nn.Module):
             static_input = self.static_embed(x)
             x = static_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'non-static':
-            non_static_input = self.static_embed(x)
+            non_static_input = self.non_static_embed(x)
             x = non_static_input.unsqueeze(1) # (batch, channel_input, sent_len, embed_dim)
         elif self.mode == 'multichannel':
             non_static_input = self.non_static_embed(x)
