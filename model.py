@@ -24,11 +24,16 @@ class KimCNN(nn.Module):
             input_channel = 4
         elif self.mode == 'multichannel' or self.mode == 'linguistic_static' or self.mode == 'linguistic_nonstatic':
             input_channel = 2
+        elif self.mode == 'linguistic_head':
+            input_channel = 1
         else:
             input_channel = 1
 
-        if 'linguistic' in self.mode:
+        if 'linguistic_nonstatic' in self.mode or 'linguistic_static' in self.mode:
             words_dim += pos_size + dep_size
+        elif 'linguistic_head' in self.mode:
+            words_dim += (pos_size + dep_size + words_dim)
+
 
         self.embed = nn.Embedding(words_num, words_dim)
         self.static_embed = nn.Embedding(embed_num, embed_dim)
@@ -42,6 +47,10 @@ class KimCNN(nn.Module):
 
         self.non_static_pos_embed = nn.Embedding(vocab_pos_size, pos_size)
         self.non_static_dep_embed = nn.Embedding(vocab_dep_size, dep_size)
+
+        self.static_sentiment_embed = nn.Embedding(words_num, 2)
+        self.static_sentiment_embed.weight.requires_grad = False
+        self.non_static_sentiment_embed = nn.Embedding(words_num, 2)
 
         self.conv1 = nn.Conv2d(input_channel, output_channel, (3, words_dim), padding=(2,0))
         self.conv2 = nn.Conv2d(input_channel, output_channel, (4, words_dim), padding=(3,0))
@@ -114,6 +123,16 @@ class KimCNN(nn.Module):
             head_channel_dynamic = torch.cat([head_non_static_input, head_non_static_pos_input,
                                                 head_non_static_dep_input], 2)
             x = torch.stack([word_channel_dynamic, word_channel_static, head_channel_dynamic,head_channel_static], dim=1)
+        elif self.mode == 'linguistic_head':
+            word_static_input = self.non_static_embed(x_text)
+            word_static_pos_input = self.static_pos_embed(x_pos)
+            word_static_dep_input = self.static_dep_embed(x_dep)
+            word_head_input = self.non_static_embed(head_x)
+            x = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input, word_head_input], 2)
+        elif self.mode == 'nonstatic_plus_feats':
+            non_static_input = self.static_embed(x_text)
+            non_static_sentiment =  self.non_static_sentiment_embed(x_text)
+            x = torch.cat([non_static_input, non_static_sentiment], dim=2).unsqueeze(1)
         else:
             print("Unsupported Mode")
             exit()

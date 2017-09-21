@@ -110,11 +110,12 @@ else:
     model.non_static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
     model.static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
     model.non_static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
+    model.static_sentiment_embed.weight.data.copy_(TEXT.vocab.vectors)
+    model.non_static_sentiment_embed.weight.data.copy_(TEXT.vocab.vectors)
 
     if args.cuda:
         model.cuda()
         print("Shift model to GPU")
-
 
 parameter = filter(lambda p: p.requires_grad, model.parameters())
 #for idx, p in enumerate(parameter):

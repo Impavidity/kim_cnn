@@ -25,6 +25,7 @@ def get_args():
     parser.add_argument('--vector_cache', type=str, default="data/word2vec.sst-1.pt")
     parser.add_argument('--pos_cache', type=str, default="data/pos.sst-1.pt")
     parser.add_argument('--dep_cache', type=str, default="data/dep.sst-1.pt")
+    parser.add_argument('--sentiment_cache', type=str, default="data/sentiments.2000.pt")
     parser.add_argument('--trained_model', type=str, default="")
     parser.add_argument('--weight_decay',type=float, default=0)
 
