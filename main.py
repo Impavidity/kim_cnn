@@ -35,8 +35,9 @@ if args.dataset == 'SST-1':
     HEAD_DEP_TAG = data.Field(batch_first=True)
     WORD_POS_TAG = data.Field(batch_first=True)
     WORD_DEP_TAG = data.Field(batch_first=True)
+    WORD_SENTIMENT = data.Field(batch_first=True, tokenize=clean_str_sst)
     train, dev, test = SST1Dataset.splits(TEXT, LABEL, HEAD_TEXT, HEAD_POS_TAG, HEAD_DEP_TAG, WORD_POS_TAG,
-                                          WORD_DEP_TAG)
+                                          WORD_DEP_TAG, WORD_SENTIMENT)
 
 TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
@@ -45,9 +46,11 @@ WORD_DEP_TAG.build_vocab(train)
 HEAD_TEXT.build_vocab(train, min_freq=2)
 HEAD_POS_TAG.build_vocab(train)
 HEAD_DEP_TAG.build_vocab(train)
+WORD_SENTIMENT.build_vocab(train, min_freq=2)
+
 
 train_iter = data.Iterator(train, batch_size=args.batch_size, device=args.gpu, train=True, repeat=False,
-                                   sort=False, shuffle=True)
+                                   sort=False, shuffle=False)
 dev_iter = data.Iterator(dev, batch_size=args.batch_size, device=args.gpu, train=False, repeat=False,
                                    sort=False, shuffle=False)
 test_iter = data.Iterator(test, batch_size=args.batch_size, device=args.gpu, train=False, repeat=False,
@@ -59,6 +62,7 @@ config.words_num = len(TEXT.vocab)
 config.embed_num = len(TEXT.vocab)
 config.pos_vocab = len(WORD_POS_TAG.vocab)
 config.dep_vocab = len(WORD_DEP_TAG.vocab)
+config.sentiment_num = len(WORD_SENTIMENT.vocab)
 
 print("Label dict:", LABEL.vocab.itos)
 

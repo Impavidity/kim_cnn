@@ -7,6 +7,7 @@ import numpy as np
 from torchtext import data
 from args import get_args
 from model import KimCNN
+import copy
 
 import random
 
@@ -59,7 +60,9 @@ if args.dataset == 'SST-1':
     HEAD_DEP_TAG = data.Field(batch_first=True)
     WORD_POS_TAG = data.Field(batch_first=True)
     WORD_DEP_TAG = data.Field(batch_first=True)
-    train, dev, test = SST1Dataset.splits(TEXT, LABEL, HEAD_TEXT, HEAD_POS_TAG, HEAD_DEP_TAG, WORD_POS_TAG, WORD_DEP_TAG)
+    WORD_SENTIMENT = data.Field(batch_first=True, tokenize=clean_str_sst)
+    train, dev, test = SST1Dataset.splits(TEXT, LABEL, HEAD_TEXT, HEAD_POS_TAG, HEAD_DEP_TAG, WORD_POS_TAG,
+                                          WORD_DEP_TAG, WORD_SENTIMENT)
 
 TEXT.build_vocab(train, min_freq=2)
 LABEL.build_vocab(train)
@@ -68,14 +71,16 @@ WORD_DEP_TAG.build_vocab(train)
 HEAD_TEXT.build_vocab(train, min_freq=2)
 HEAD_POS_TAG.build_vocab(train)
 HEAD_DEP_TAG.build_vocab(train)
+WORD_SENTIMENT.build_vocab(train, min_freq=2)
 
 
 TEXT = set_vectors(TEXT, args.vector_cache)
 WORD_POS_TAG = set_vectors(WORD_POS_TAG, args.pos_cache)
 WORD_DEP_TAG = set_vectors(WORD_DEP_TAG, args.dep_cache)
+WORD_SENTIMENT = set_vectors(WORD_SENTIMENT, args.sentiment_cache)
 
 train_iter = data.Iterator(train, batch_size=args.batch_size, device=args.gpu, train=True, repeat=False,
-                                   sort=False, shuffle=True)
+                                   sort=False, shuffle=False)
 dev_iter = data.Iterator(dev, batch_size=args.batch_size, device=args.gpu, train=False, repeat=False,
                                    sort=False, shuffle=False)
 test_iter = data.Iterator(test, batch_size=args.batch_size, device=args.gpu, train=False, repeat=False,
@@ -86,8 +91,8 @@ config.words_num = len(TEXT.vocab)
 config.embed_num = len(TEXT.vocab)
 config.pos_vocab = len(WORD_POS_TAG.vocab)
 config.dep_vocab = len(WORD_DEP_TAG.vocab)
+config.sentiment_num = len(WORD_SENTIMENT.vocab)
 
-#print(config)
 print("Dataset {}    Mode {}".format(args.dataset, args.mode))
 print("VOCAB num",len(TEXT.vocab))
 print("LABEL.target_class:", len(LABEL.vocab))
@@ -110,16 +115,14 @@ else:
     model.non_static_pos_embed.weight.data.copy_(WORD_POS_TAG.vocab.vectors)
     model.static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
     model.non_static_dep_embed.weight.data.copy_(WORD_DEP_TAG.vocab.vectors)
-    model.static_sentiment_embed.weight.data.copy_(TEXT.vocab.vectors)
-    model.non_static_sentiment_embed.weight.data.copy_(TEXT.vocab.vectors)
+    model.static_sentiment_embed.weight.data.copy_(WORD_SENTIMENT.vocab.vectors)
+    model.non_static_sentiment_embed.weight.data.copy_(WORD_SENTIMENT.vocab.vectors)
 
     if args.cuda:
         model.cuda()
         print("Shift model to GPU")
 
 parameter = filter(lambda p: p.requires_grad, model.parameters())
-#for idx, p in enumerate(parameter):
-#    print(idx, p)
 optimizer = torch.optim.Adadelta(parameter, lr=args.lr, weight_decay=args.weight_decay)
 criterion = nn.CrossEntropyLoss()
 early_stop = False

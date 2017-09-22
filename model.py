@@ -12,6 +12,7 @@ class KimCNN(nn.Module):
         words_dim = config.words_dim
         embed_num = config.embed_num
         embed_dim = config.embed_dim
+        sentiment_num = config.sentiment_num
         self.mode = config.mode
         Ks = 3 # There are three conv net here
 
@@ -19,6 +20,7 @@ class KimCNN(nn.Module):
         vocab_dep_size = config.dep_vocab
         pos_size = 44
         dep_size = 41
+        sentiment_dim = 2
 
         if self.mode == 'linguistic_multichannel':
             input_channel = 4
@@ -33,6 +35,8 @@ class KimCNN(nn.Module):
             words_dim += pos_size + dep_size
         elif 'linguistic_head' in self.mode:
             words_dim += (pos_size + dep_size + words_dim)
+        elif self.mode == 'nonstatic_plus_feats':
+            words_dim += sentiment_dim
 
 
         self.embed = nn.Embedding(words_num, words_dim)
@@ -48,9 +52,9 @@ class KimCNN(nn.Module):
         self.non_static_pos_embed = nn.Embedding(vocab_pos_size, pos_size)
         self.non_static_dep_embed = nn.Embedding(vocab_dep_size, dep_size)
 
-        self.static_sentiment_embed = nn.Embedding(words_num, 2)
+        self.static_sentiment_embed = nn.Embedding(sentiment_num, sentiment_dim)
         self.static_sentiment_embed.weight.requires_grad = False
-        self.non_static_sentiment_embed = nn.Embedding(words_num, 2)
+        self.non_static_sentiment_embed = nn.Embedding(sentiment_num, sentiment_dim)
 
         self.conv1 = nn.Conv2d(input_channel, output_channel, (3, words_dim), padding=(2,0))
         self.conv2 = nn.Conv2d(input_channel, output_channel, (4, words_dim), padding=(3,0))
@@ -67,6 +71,7 @@ class KimCNN(nn.Module):
         head_x = x.head_text
         head_pos = x.head_pos
         head_dep = x.head_dep
+        x_sentiment = x.word_sentiment
 
         if self.mode == 'rand':
             word_input = self.embed(x_text) # (batch, sent_len, embed_dim)
@@ -131,7 +136,7 @@ class KimCNN(nn.Module):
             x = torch.cat([word_static_input, word_static_pos_input, word_static_dep_input, word_head_input], 2)
         elif self.mode == 'nonstatic_plus_feats':
             non_static_input = self.static_embed(x_text)
-            non_static_sentiment =  self.non_static_sentiment_embed(x_text)
+            non_static_sentiment = self.non_static_sentiment_embed(x_sentiment)
             x = torch.cat([non_static_input, non_static_sentiment], dim=2).unsqueeze(1)
         else:
             print("Unsupported Mode")
