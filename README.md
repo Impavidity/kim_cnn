@@ -35,11 +35,23 @@ python main.py --trained_model saves/best_model.pt --mode multichannel
 
 
 ## Dataset and Embeddings 
-- Dataset is in data repo. You can set your own path in *SST1.py* and *args.py* for data and embeddings.
 
+Dataset is in data dir. You can set your own path in *SST1.py* and *args.py* for data and embeddings.
 We experiment the model on the following three datasets.
 
 - SST-1: Keep the original splits and train with phrase level dataset and test on sentence level dataset.
+
+For **word2vec.sst-1.pt** is a subset of word2vector. We just select the word appearing in the SST-1 dataset and generate this file with the **vector_preprocess.py**. You can select these from any kind of word embedding text file and generate in following format.
+
+```
+word vector_in_one_line 
+```
+
+and then run
+```
+python vector_preprocess.py file_in embed.pt
+```
+Here you can get *embed.pt* for the embedding file. Remember change the argument in *args.py* file with your own embedding.
 
 ## Setting
 
